@@ -8,6 +8,7 @@
     "require": {
         "php": "^8.3",
         "endroid/qr-code": "^6.1",
+        "firebase/php-jwt": "^7.0",
         "khqr-gateway/bakong-khqr-php": "^1.0",
         "laravel/framework": "^13.0",
         "laravel/tinker": "^3.0"

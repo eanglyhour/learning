@@ -19,6 +19,7 @@ class PersonController extends Controller
     {
         return [
             'id'    => $person->id,
+            'user_id' => $person->user_id,
             'name'  => $person->name,
             'title' => $person->title,
             'image' => $this->imageUrl($person->image),
@@ -43,12 +44,21 @@ class PersonController extends Controller
             'image' => 'required|file|image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
 
+        // One-to-One check
+        if (Person::where('user_id', auth()->id())->exists()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'User already has a person profile'
+            ], 400);
+        }
+
         $imagePath = $this->handleImage($request);
 
         $person = Person::create([
-            'name'  => $request->name,
-            'title' => $request->title,
-            'image' => $imagePath,
+            'user_id' => auth()->id(),
+            'name'    => $request->name,
+            'title'   => $request->title,
+            'image'   => $imagePath,
         ]);
 
         return response()->json([
@@ -68,38 +78,6 @@ class PersonController extends Controller
         ]);
     }
 
-    // public function update(Request $request, $id)
-    // {
-    //     $person = Person::findOrFail($id);
-
-    //     $request->validate([
-    //         'name'  => 'sometimes|string|max:255',
-    //         'title' => 'sometimes|string|max:255',
-    //         'image' => 'sometimes|file|image|mimes:jpg,jpeg,png,webp|max:2048',
-    //     ]);
-
-    //     // update image if new uploaded
-    //     if ($request->hasFile('image')) {
-
-    //         if ($person->image) {
-    //             Storage::disk('public')->delete($person->image);
-    //         }
-
-    //         $person->image = $this->handleImage($request);
-    //     }
-
-    //     $person->name  = $request->name ?? $person->name;
-    //     $person->title = $request->title ?? $person->title;
-
-    //     $person->save();
-
-    //     return response()->json([
-    //         'success' => true,
-    //         'message' => 'Updated successfully',
-    //         'data' => $this->format($person),
-    //     ]);
-    // }
-
     public function update(Request $request, $id)
     {
         $person = Person::findOrFail($id);
@@ -112,15 +90,11 @@ class PersonController extends Controller
 
         $data = [];
 
-        if ($request->has('name') && $request->name !== $person->name) {
+        if ($request->filled('name')) {
             $data['name'] = $request->name;
         }
 
-        // if ($request->filled('name') && $request->name !== $person->name) {
-        //     $data['name'] = $request->name;
-        // }
-
-        if ($request->has('title')) {
+        if ($request->filled('title')) {
             $data['title'] = $request->title;
         }
 
@@ -134,7 +108,6 @@ class PersonController extends Controller
             $data['image'] = $this->handleImage($request);
         }
 
-        // update in one line (array update)
         $person->update($data);
 
         return response()->json([
@@ -167,7 +140,6 @@ class PersonController extends Controller
             $file = $request->file('image');
             $ext = $file->getClientOriginalExtension();
 
-            // SAFE + SHORT + UNIQUE NAME
             $filename = Str::random(10) . '_' . time() . '.' . $ext;
 
             return $file->storeAs('people', $filename, 'public');
@@ -204,3 +176,36 @@ class PersonController extends Controller
         return null;
     }
 }
+
+    // public function update(Request $request, $id)
+    // {
+    //     $person = Person::findOrFail($id);
+
+    //     $request->validate([
+    //         'name'  => 'sometimes|string|max:255',
+    //         'title' => 'sometimes|string|max:255',
+    //         'image' => 'sometimes|file|image|mimes:jpg,jpeg,png,webp|max:2048',
+    //     ]);
+
+    //     // update image if new uploaded
+    //     if ($request->hasFile('image')) {
+
+    //         if ($person->image) {
+    //             Storage::disk('public')->delete($person->image);
+    //         }
+
+    //         $person->image = $this->handleImage($request);
+    //     }
+
+    //     $person->name  = $request->name ?? $person->name;
+    //     $person->title = $request->title ?? $person->title;
+
+    //     $person->save();
+
+    //     return response()->json([
+    //         'success' => true,
+    //         'message' => 'Updated successfully',
+    //         'data' => $this->format($person),
+    //     ]);
+    // }
+

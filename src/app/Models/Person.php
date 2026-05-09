@@ -11,4 +11,8 @@ class Person extends Model
         'title',
         'image'
     ];
+    public function user()
+{
+    return $this->belongsTo(User::class);
+}
 }

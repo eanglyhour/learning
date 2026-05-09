@@ -154,8 +154,6 @@ class PaymentController extends Controller
                 ?? 0
             );
 
-            // ================= FIXED IMPORTANT PART =================
-            // ❌ DO NOT require transactionId (THIS WAS YOUR BUG)
             if ($responseCode != 0) {
                 return response()->json([
                     'success' => false,
@@ -163,7 +161,6 @@ class PaymentController extends Controller
                 ]);
             }
 
-            // ================= AMOUNT CHECK =================
             if (round($paidAmount) != round($payment->amount)) {
                 return response()->json([
                     'success' => false,
@@ -185,8 +182,6 @@ class PaymentController extends Controller
                     'status'  => 'already_paid'
                 ]);
             }
-
-            // ================= STOCK UPDATE =================
             foreach ($order->items as $item) {
 
                 $product = Product::lockForUpdate()->find($item->product_id);
@@ -201,13 +196,10 @@ class PaymentController extends Controller
 
                 $product->decrement('stock', $item->quantity);
             }
-
-            // ================= UPDATE ORDER =================
             $order->update([
                 'status' => 'paid'
             ]);
 
-            // ================= UPDATE PAYMENT =================
             $payment->update([
                 'status'         => 'success',
                 'transaction_id' => $transactionId
