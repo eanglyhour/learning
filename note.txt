@@ -1,6 +1,0 @@
-taskkill /F /PID 2972
-docker exec -it shop-app php artisan make:controller AuthController
-docker exec -it shop-app php artisan make:middleware JwtMiddleware
-docker exec -it shop-app php artisan make:model RefreshToken -m
-docker exec -it shop-app mkdir app/Services
-docker exec -it shop-app touch app/Services/JwtService.php
